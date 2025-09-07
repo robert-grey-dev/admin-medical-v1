@@ -62,8 +62,8 @@ A comprehensive medical administration portal built with React, TypeScript, and 
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
-   cd medical-admin-portal
+   git clone https://github.com/robert-grey-dev/admin-medical-v1.git
+   cd admin-medical-v1
    ```
 
 2. **Install dependencies**
