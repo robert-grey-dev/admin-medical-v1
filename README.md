@@ -2,7 +2,7 @@
 
 A comprehensive medical administration portal built with React, TypeScript, and Supabase. This application provides a secure platform for managing doctors, users, and patient reviews with role-based access control.
 
-![Medical Admin Portal]()
+![Medical Admin Portal](https://i.postimg.cc/QCWC0jk0/home.png)
 
 ## ✨ Features
 
