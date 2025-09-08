@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { ImageUpload } from '@/components/ui/image-upload';
 import { 
   Search, 
   Plus, 
@@ -41,6 +42,8 @@ const Doctors = () => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
+  const [addImageUrl, setAddImageUrl] = useState<string | null>(null);
+  const [editImageUrl, setEditImageUrl] = useState<string | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -154,7 +157,7 @@ const Doctors = () => {
       name: formData.get('name') as string,
       specialty: formData.get('specialty') as string,
       description: formData.get('description') as string || undefined,
-      image_url: formData.get('image_url') as string || undefined,
+      image_url: addImageUrl || undefined,
       experience_years: parseInt(formData.get('experience_years') as string) || undefined,
     };
 
@@ -168,7 +171,7 @@ const Doctors = () => {
       name: formData.get('name') as string,
       specialty: formData.get('specialty') as string,
       description: formData.get('description') as string || undefined,
-      image_url: formData.get('image_url') as string || undefined,
+      image_url: editImageUrl || selectedDoctor.image_url,
       experience_years: parseInt(formData.get('experience_years') as string) || undefined,
     };
 
@@ -183,7 +186,19 @@ const Doctors = () => {
 
   const openEditDialog = (doctor: Doctor) => {
     setSelectedDoctor(doctor);
+    setEditImageUrl(doctor.image_url || null);
     setIsEditDialogOpen(true);
+  };
+
+  const resetAddForm = () => {
+    setAddImageUrl(null);
+    setIsAddDialogOpen(false);
+  };
+
+  const resetEditForm = () => {
+    setEditImageUrl(null);
+    setSelectedDoctor(null);
+    setIsEditDialogOpen(false);
   };
 
   return (
@@ -197,14 +212,14 @@ const Doctors = () => {
           </p>
         </div>
         
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        <Dialog open={isAddDialogOpen} onOpenChange={(open) => open ? setIsAddDialogOpen(true) : resetAddForm()}>
           <DialogTrigger asChild>
             <Button className="gap-2 bg-gradient-primary hover:opacity-90">
               <Plus className="h-4 w-4" />
               Add Doctor
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px]">
+          <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Add New Doctor</DialogTitle>
               <DialogDescription>
@@ -215,7 +230,16 @@ const Doctors = () => {
               e.preventDefault();
               const formData = new FormData(e.target as HTMLFormElement);
               handleAddDoctor(formData);
-            }} className="space-y-4">
+            }} className="space-y-6">
+              
+              <ImageUpload
+                value={addImageUrl}
+                onChange={setAddImageUrl}
+                bucket="doctor-images"
+                folder="profiles"
+                disabled={addDoctorMutation.isPending}
+              />
+              
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Full Name</Label>
@@ -237,26 +261,16 @@ const Doctors = () => {
                 </div>
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="experience_years">Years of Experience</Label>
-                  <Input
-                    id="experience_years"
-                    name="experience_years"
-                    type="number"
-                    min="0"
-                    placeholder="10"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="image_url">Profile Image URL</Label>
-                  <Input
-                    id="image_url"
-                    name="image_url"
-                    type="url"
-                    placeholder="https://..."
-                  />
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="experience_years">Years of Experience</Label>
+                <Input
+                  id="experience_years"
+                  name="experience_years"
+                  type="number"
+                  min="0"
+                  placeholder="10"
+                  className="w-full"
+                />
               </div>
               
               <div className="space-y-2">
@@ -270,7 +284,7 @@ const Doctors = () => {
               </div>
               
               <div className="flex justify-end gap-2">
-                <Button type="button" variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+                <Button type="button" variant="outline" onClick={resetAddForm}>
                   Cancel
                 </Button>
                 <Button type="submit" disabled={addDoctorMutation.isPending}>
@@ -282,8 +296,8 @@ const Doctors = () => {
         </Dialog>
 
         {/* Edit Doctor Dialog */}
-        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-          <DialogContent className="sm:max-w-[500px]">
+        <Dialog open={isEditDialogOpen} onOpenChange={(open) => open ? setIsEditDialogOpen(true) : resetEditForm()}>
+          <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Edit Doctor</DialogTitle>
               <DialogDescription>
@@ -294,7 +308,16 @@ const Doctors = () => {
               e.preventDefault();
               const formData = new FormData(e.target as HTMLFormElement);
               handleEditDoctor(formData);
-            }} className="space-y-4">
+            }} className="space-y-6">
+              
+              <ImageUpload
+                value={editImageUrl}
+                onChange={setEditImageUrl}
+                bucket="doctor-images"
+                folder="profiles"
+                disabled={editDoctorMutation.isPending}
+              />
+              
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="edit-name">Full Name</Label>
@@ -318,28 +341,17 @@ const Doctors = () => {
                 </div>
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="edit-experience_years">Years of Experience</Label>
-                  <Input
-                    id="edit-experience_years"
-                    name="experience_years"
-                    type="number"
-                    min="0"
-                    placeholder="10"
-                    defaultValue={selectedDoctor?.experience_years || ''}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="edit-image_url">Profile Image URL</Label>
-                  <Input
-                    id="edit-image_url"
-                    name="image_url"
-                    type="url"
-                    placeholder="https://..."
-                    defaultValue={selectedDoctor?.image_url || ''}
-                  />
-                </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-experience_years">Years of Experience</Label>
+                <Input
+                  id="edit-experience_years"
+                  name="experience_years"
+                  type="number"
+                  min="0"
+                  placeholder="10"
+                  defaultValue={selectedDoctor?.experience_years || ''}
+                  className="w-full"
+                />
               </div>
               
               <div className="space-y-2">
@@ -354,7 +366,7 @@ const Doctors = () => {
               </div>
               
               <div className="flex justify-end gap-2">
-                <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                <Button type="button" variant="outline" onClick={resetEditForm}>
                   Cancel
                 </Button>
                 <Button type="submit" disabled={editDoctorMutation.isPending}>
